@@ -1,7 +1,5 @@
 package com.bnuzhoj.bnuzhojbackendcommon.common;
 
-import lombok.Getter;
-
 /**
  * 自定义错误码
  *
