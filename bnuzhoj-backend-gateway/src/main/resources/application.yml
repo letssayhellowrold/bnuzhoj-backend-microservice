@@ -1,0 +1,41 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+    gateway:
+      routes:
+        - id: bnuzhoj-backend-user-service
+          # lb 为负载均衡的设置
+          uri: lb://bnuzhoj-backend-user-service
+          predicates:
+            - Path=/api/user/**
+        - id: bnuzhoj-backend-question-service
+          uri: lb://bnuzhoj-backend-question-service
+          predicates:
+            - Path=/api/question/**
+        - id: bnuzhoj-backend-judge-service
+          uri: lb://bnuzhoj-backend-judge-service
+          predicates:
+            - Path=/api/judge/**
+        - id: bnuzhoj-backend-post-service
+          uri: lb://bnuzhoj-backend-post-service
+          predicates:
+            - Path=/api/post/**
+  application:
+    name: bnuzhoj-backend-gateway
+  main:
+    web-application-type: reactive
+server:
+  port: 8101
+knife4j:
+  gateway:
+    # ① 第一个配置，开启gateway聚合组件
+    enabled: true
+    # ② 第二行配置，设置聚合模式采用discover服务发现的模式
+    strategy: discover
+    discover:
+      # ③ 第三行配置，开启discover模式
+      enabled: true
+      # ④ 第四行配置，聚合子服务全部为Swagger2规范的文档
+      version: swagger2
