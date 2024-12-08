@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * 
  * 
  */
-public enum goJudgeStatusEnum {
+public enum GoJudgeStatusEnum {
     ACCEPTED("正常结束","Accepted"),
     Time_Limit_Exceeded("时间超限","Time Limit Exceeded"),
     Memory_Limit_Exceeded("内存超限","Memory Limit Exceeded"),
@@ -26,7 +26,7 @@ public enum goJudgeStatusEnum {
 
     private final String value;
 
-    goJudgeStatusEnum(String text, String value) {
+    GoJudgeStatusEnum(String text, String value) {
         this.text = text;
         this.value = value;
     }
@@ -46,11 +46,11 @@ public enum goJudgeStatusEnum {
      * @param value
      * @return
      */
-    public static goJudgeStatusEnum getEnumByValue(String value) {
+    public static GoJudgeStatusEnum getEnumByValue(String value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
-        for (goJudgeStatusEnum anEnum : goJudgeStatusEnum.values()) {
+        for (GoJudgeStatusEnum anEnum : GoJudgeStatusEnum.values()) {
             if (anEnum.value.equals(value)) {
                 return anEnum;
             }

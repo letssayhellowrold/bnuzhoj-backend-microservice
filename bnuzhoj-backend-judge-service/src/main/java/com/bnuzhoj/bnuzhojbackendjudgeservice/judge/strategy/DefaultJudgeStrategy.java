@@ -5,7 +5,9 @@ import com.bnuzhoj.bnuzhojbackendmodel.model.codesandbox.JudgeInfo;
 import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeCase;
 import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeConfig;
 import com.bnuzhoj.bnuzhojbackendmodel.model.entity.Question;
+import com.bnuzhoj.bnuzhojbackendmodel.model.enums.GoJudgeStatusEnum;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.JudgeInfoMessageEnum;
+import com.bnuzhoj.bnuzhojbackendmodel.model.enums.QuestionSubmitStatusEnum;
 
 
 import java.util.ArrayList;
@@ -25,47 +27,62 @@ public class DefaultJudgeStrategy implements JudgeStrategy {
 
         // 初始化result列表，长度与测试用例数量一致
         List<JudgeInfo> result = new ArrayList<>();
-        for (int i = 0; i < judgeCaseList.size(); i++) {
-            result.add(new JudgeInfo());
-        }
+        // 检查每一个判题信息和对应的输出
+        for(int i = 0;i<judgeInfoList.size();i++)
+        {
+            JudgeInfo judgeInfoItem = judgeInfoList.get(i);
+            String outputItem = outputList.get(i);
+            String stdOutputItem = judgeCaseList.get(i).getOutput();
+            JudgeInfo resultItem = new JudgeInfo();
+            Long costMemory = judgeInfoItem.getMemory();
+            Long costTime = judgeInfoItem.getTime();
+            Long costStack = judgeInfoItem.getStack();
+            // 先检查状态
 
-        // 判断输出数量是否和预期输出数量相等
-        if (outputList.size() != inputList.size()) {
-            for (JudgeInfo judgeInfo : result) {
-                judgeInfo.setMessage(JudgeInfoMessageEnum.WRONG_ANSWER.getValue());
+            // 非正常退出
+            if(!judgeInfoItem.getMessage().equals(GoJudgeStatusEnum.ACCEPTED.getValue()))
+            {
+                resultItem.setMessage(judgeInfoItem.getMessage());
             }
-            return result;
-        }
+            else{
+                // 正常退出说明有输出，先检查运行消耗是否符合题目限制，再看答案是否正确
+                String judgeConfigStr = question.getJudgeConfig();
+                JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
+                Long limitMemory = judgeConfig.getMemoryLimit() * 1024L; // 转换为字节
+                Long limitTime = judgeConfig.getTimeLimit() * 1000000L; // 转换为微秒
+                Long limitStack = judgeConfig.getStackLimit() * 1024L;
 
-        // 依次判断每一项输出和预期输出是否相等
-        for (int i = 0; i < judgeCaseList.size(); i++) {
-            JudgeCase judgeCase = judgeCaseList.get(i);
-            if (!judgeCase.getOutput().equals(outputList.get(i))) {
-                result.get(i).setMessage(JudgeInfoMessageEnum.WRONG_ANSWER.getValue());
+
+
+                if(limitMemory<costMemory)// 超出内存限制
+                {
+                    resultItem.setMessage(JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED.getValue());
+                }
+                else if(limitTime<costTime)// 超时
+                {
+                    resultItem.setMessage(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED.getValue());
+                }
+                else
+                {
+                    // 符合判题要求，开始检查答案是否正确
+
+                    // 消除行末换行
+                    if(outputItem.endsWith("\n"))outputItem = outputItem.substring(0, outputItem.length() - 1);
+                    if(stdOutputItem.endsWith("\n"))stdOutputItem = stdOutputItem.substring(0, stdOutputItem.length() - 1);
+
+                    if(outputItem.equals(stdOutputItem))resultItem.setMessage(JudgeInfoMessageEnum.ACCEPTED.getValue());
+                    else resultItem.setMessage(JudgeInfoMessageEnum.WRONG_ANSWER.getValue());
+                }
             }
-        }
-
-        // 判断题目限制
-        String judgeConfigStr = question.getJudgeConfig();
-        JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
-        Long needMemoryLimit = judgeConfig.getMemoryLimit() * 1048576L; // 转换为字节
-        Long needTimeLimit = judgeConfig.getTimeLimit() * 1000000L; // 转换为微秒
-
-        for (int i = 0; i < judgeInfoList.size(); i++) {
-            JudgeInfo judgeInfo = judgeInfoList.get(i);
-            Long memory = judgeInfo.getMemory();
-            Long time = judgeInfo.getTime();
-            JudgeInfo judgeInfoResponse = result.get(i);
-
-            if (memory > needMemoryLimit) {
-                judgeInfoResponse.setMessage(JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED.getValue());
-            } else if (time > needTimeLimit) {
-                judgeInfoResponse.setMessage(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED.getValue());
-            } else {
-                judgeInfoResponse.setMessage(JudgeInfoMessageEnum.ACCEPTED.getValue());
-                judgeInfoResponse.setMemory(memory);
-                judgeInfoResponse.setTime(time);
+            // 只在正确情况下记录资源消耗
+            if(resultItem.getMessage().equals(JudgeInfoMessageEnum.ACCEPTED.getValue()))
+            {
+                resultItem.setMemory(costMemory);
+                resultItem.setTime(costTime);
+                resultItem.setStack(costStack);
             }
+            // 更新结果列表
+            result.add(resultItem);
         }
         return result;
     }

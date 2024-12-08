@@ -1,7 +1,10 @@
 package com.bnuzhoj.bnuzhojbackendmodel.model.codesandbox;
 
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import cn.hutool.core.util.StrUtil;
 import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeConfig;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.QuestionSubmitLanguageEnum;
 
@@ -9,7 +12,7 @@ import java.util.Objects;
 
 public class GoJudgeApi {
 
-    private final long maxFileMemoryAllow = 10485760L;//单位字节，所有文件操作都给予 10 MB 的操作空间
+    private final long maxFileMemoryAllow = 1048576000L;//单位字节，所有文件操作都给予 100 MB 的操作空间
 
     private final long maxTimeAllow = 10_000_000_000L;// 单位纳秒，最多给予 10s
 
@@ -19,7 +22,7 @@ public class GoJudgeApi {
      * @param sourceCode 源代码字符串
      * @return 构建好的JSON字符串
      */
-    public String compileCmd(String language, String sourceCode) {
+    public JSON compileCmd(String language, String sourceCode) {
         // 创建一个JSONObject来表示整个JSON对象
         JSONObject root = new JSONObject();
 
@@ -65,7 +68,11 @@ public class GoJudgeApi {
             // 创建copyIn对象
             JSONObject copyIn = new JSONObject();
             JSONObject aCc = new JSONObject();
-            aCc.put("content", sourceCode); // 使用传入的源代码字符串
+            // 转译 \r\n 为 \n
+            String unixNewlineCode = sourceCode.replace("\r\n", "\n");
+//            // 转译 \ 和 "
+//            String escapedCode = unixNewlineCode.replace("\\", "\\\\").replace("\"", "\\\"");
+            aCc.put("content", unixNewlineCode); // 使用传入的转义后的字符串
             copyIn.put("a.cc", aCc);
             cmd.put("copyIn", copyIn);
 
@@ -84,7 +91,7 @@ public class GoJudgeApi {
             root.put("cmd", cmdArray);
         }
         // 返回构建的JSON字符串
-        return root.toStringPretty();
+        return root;
     }
     /**
      * 构建运行命令的JSON结构体
@@ -126,9 +133,9 @@ public class GoJudgeApi {
         filesArray.add(stderr);
         cmd.put("files", filesArray);
 
-        cmd.put("cpuLimit", judgeConfig.getTimeLimit());// 时间限制
-        cmd.put("memoryLimit", judgeConfig.getMemoryLimit());// 内存限制
-        cmd.put("stackLimit",judgeConfig.getStackLimit());// 堆限制
+        cmd.put("cpuLimit", judgeConfig.getTimeLimit()*1_000_000L);// 时间限制
+        cmd.put("memoryLimit", judgeConfig.getMemoryLimit()*1024);// 内存限制
+        cmd.put("stackLimit",judgeConfig.getStackLimit()*1024);// 堆限制
         cmd.put("procLimit", maxThreadCount);// 线程限制
 
         // 创建copyIn对象

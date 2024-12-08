@@ -17,6 +17,7 @@ import com.bnuzhoj.bnuzhojbackendmodel.model.entity.Question;
 import com.bnuzhoj.bnuzhojbackendmodel.model.entity.QuestionSubmit;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.JudgeInfoMessageEnum;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.QuestionSubmitStatusEnum;
+import com.bnuzhoj.bnuzhojbackendmodel.model.enums.GoJudgeStatusEnum;
 import com.bnuzhoj.bnuzhojbackendserviceclient.service.QuestionFeignClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,7 @@ public class JudgeServiceImpl implements JudgeService {
             // 直接更新数据库并返回响应信息
             questionSubmitUpdate = new QuestionSubmit();
             questionSubmitUpdate.setId(questionSubmitId);
+            questionSubmitUpdate.setStatus(executeCodeResponse.getStatus());
             // 将列表转换为由 \$ 分隔的字符串
             String judgeInfoString = executeCodeResponse.getJudgeInfo().get(0).toString();
             questionSubmitUpdate.setJudgeInfo(judgeInfoString);

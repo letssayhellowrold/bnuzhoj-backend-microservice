@@ -2,6 +2,7 @@ package com.bnuzhoj.bnuzhojbackendjudgeservice.judge.codesandbox.impl;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -13,7 +14,7 @@ import com.bnuzhoj.bnuzhojbackendmodel.model.codesandbox.JudgeInfo;
 import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeConfig;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.JudgeInfoMessageEnum;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.QuestionSubmitStatusEnum;
-import com.bnuzhoj.bnuzhojbackendmodel.model.enums.goJudgeStatusEnum;
+import com.bnuzhoj.bnuzhojbackendmodel.model.enums.GoJudgeStatusEnum;
 
 
 import java.util.ArrayList;
@@ -42,13 +43,13 @@ public class goJudgeCodeSandbox implements CodeSandbox {
         GoJudgeApi goJudgeApi = new GoJudgeApi();
 
         // 得到编译命令
-        String compileCmd = goJudgeApi.compileCmd(language, code);
+        JSON compileCmd = goJudgeApi.compileCmd(language, code);
 
         // 执行编译
         String compileUrl = REMOTE_SANDBOX_URL + "/run";
         HttpResponse compileResponse = HttpRequest.post(compileUrl)
                 .header("Content-Type", "application/json")
-                .body(compileCmd)
+                .body(String.valueOf(compileCmd))
                 .execute();
 
         // 获取响应体中的 JSON 对象
@@ -59,7 +60,7 @@ public class goJudgeCodeSandbox implements CodeSandbox {
             // 获取每个元素（JSONObject）
             JSONObject jsonObject = responseJsonArray.getJSONObject(i);
             // 编译错误
-            if (jsonObject.getStr("status").equals(goJudgeStatusEnum.Nonzero_Exit_Status.getValue())) {
+            if (jsonObject.getStr("status").equals(GoJudgeStatusEnum.Nonzero_Exit_Status.getValue())) {
 
                 executeCodeResponse.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
                 executeCodeResponse.setMessage(JudgeInfoMessageEnum.COMPILE_ERROR.getText());
@@ -67,7 +68,7 @@ public class goJudgeCodeSandbox implements CodeSandbox {
                 List<JudgeInfo> judgeInfoList = new ArrayList<>();
                 JudgeInfo judgeInfoItem = new JudgeInfo();
                 judgeInfoItem.setMessage(JudgeInfoMessageEnum.COMPILE_ERROR.getValue());
-                judgeInfoList.add(new JudgeInfo());
+                judgeInfoList.add(judgeInfoItem);
                 executeCodeResponse.setJudgeInfo(judgeInfoList);
                 return executeCodeResponse;
             } else {// 正常返回
@@ -100,7 +101,6 @@ public class goJudgeCodeSandbox implements CodeSandbox {
                     try {
                         // 访问键值对
                         String status = jsonObject.getStr("status");
-
 //                    int exitStatus = jsonObject.getInt("exitStatus");// 退出码
 //                    long cpuTime = jsonObject.getLong("time");// 内核时间
                         long memory = jsonObject.getLong("memory");
@@ -139,6 +139,7 @@ public class goJudgeCodeSandbox implements CodeSandbox {
         }
         executeCodeResponse.setJudgeInfo(judgeInfoList);
         executeCodeResponse.setOutputList(outputList);
+        executeCodeResponse.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
 
         return executeCodeResponse;
     }
