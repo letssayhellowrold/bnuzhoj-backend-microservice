@@ -17,12 +17,16 @@ public class JudgeInfo {
      */
     private Long time;
 
+    private Long stack;
+
+    // 重写为构建 json 的形式
     @Override
     public String toString() {
         return "{" +
                 "\"message\":\"" + message + "\"," +
                 "\"memory\":" + memory + "," +
-                "\"time\":" + time +
+                "\"time\":" + time +","+
+                "\"stack\":" + stack +
                 '}';
     }
 }

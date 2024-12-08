@@ -68,7 +68,7 @@ mybatis-plus:
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
 # 代码沙箱配置
 codesandbox:
-  type: remote
+  type: goJudge
 knife4j:
   enable: true
 

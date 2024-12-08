@@ -2,7 +2,7 @@ package com.bnuzhoj.bnuzhojbackendjudgeservice.judge.codesandbox;
 
 
 import com.bnuzhoj.bnuzhojbackendjudgeservice.judge.codesandbox.impl.ExampleCodeSandbox;
-import com.bnuzhoj.bnuzhojbackendjudgeservice.judge.codesandbox.impl.RemoteCodeSandbox;
+import com.bnuzhoj.bnuzhojbackendjudgeservice.judge.codesandbox.impl.goJudgeCodeSandbox;
 
 /**
  * 代码沙箱工厂（根据字符串参数创建指定的代码沙箱实例）
@@ -19,8 +19,8 @@ public class CodeSandboxFactory {
     public static CodeSandbox newInstance(String type) {// 静态方法
         // 根据传入的类别，创建不同的对象
         switch (type) {
-            case "remote":
-                return new RemoteCodeSandbox();
+            case "goJudge":
+                return new goJudgeCodeSandbox();
             case "example":
             default:
                 return new ExampleCodeSandbox();

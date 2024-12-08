@@ -12,6 +12,7 @@ import com.bnuzhoj.bnuzhojbackendmodel.model.codesandbox.ExecuteCodeRequest;
 import com.bnuzhoj.bnuzhojbackendmodel.model.codesandbox.ExecuteCodeResponse;
 import com.bnuzhoj.bnuzhojbackendmodel.model.codesandbox.JudgeInfo;
 import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeCase;
+import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeConfig;
 import com.bnuzhoj.bnuzhojbackendmodel.model.entity.Question;
 import com.bnuzhoj.bnuzhojbackendmodel.model.entity.QuestionSubmit;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.JudgeInfoMessageEnum;
@@ -30,7 +31,6 @@ public class JudgeServiceImpl implements JudgeService {
 
     @Resource
     private QuestionFeignClient questionFeignClient;
-
 
     @Resource
     private JudgeManager judgeManager;
@@ -63,10 +63,15 @@ public class JudgeServiceImpl implements JudgeService {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
         // 4）调用沙箱，获取到执行结果
-        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
-        codeSandbox = new CodeSandboxProxy(codeSandbox);
+        // 创建沙箱实例
+        CodeSandbox codeSandbox = new CodeSandboxProxy(CodeSandboxFactory.newInstance(type));// 工厂模式+代理模式
+        // 获取沙箱需要的输入
         String language = questionSubmit.getLanguage();
         String code = questionSubmit.getCode();
+        String judgeConfigStr = question.getJudgeConfig();
+        // 使用 Hutool 的 JSONUtil 将 JSON 字符串转换为 JudgeConfig 对象
+        JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
+
         // 获取输入用例
         String judgeCaseStr = question.getJudgeCase();
         List<JudgeCase> judgeCaseList = JSONUtil.toList(judgeCaseStr, JudgeCase.class);
@@ -75,12 +80,31 @@ public class JudgeServiceImpl implements JudgeService {
                 .code(code)
                 .language(language)
                 .inputList(inputList)
+                .judgeConfig(judgeConfig)
                 .build();
+
         // 执行代码
         ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        // 编译失败
+        if(executeCodeResponse.getStatus().equals(QuestionSubmitStatusEnum.FAILED.getValue()))
+        {
+            // 直接更新数据库并返回响应信息
+            questionSubmitUpdate = new QuestionSubmit();
+            questionSubmitUpdate.setId(questionSubmitId);
+            // 将列表转换为由 \$ 分隔的字符串
+            String judgeInfoString = executeCodeResponse.getJudgeInfo().get(0).toString();
+            questionSubmitUpdate.setJudgeInfo(judgeInfoString);
+            update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
+            if (!update) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
+            }
+            return questionFeignClient.getQuestionSubmitById(questionId);
+        }
+
         List<String> outputList = executeCodeResponse.getOutputList();
         // 5）根据沙箱的执行结果，设置题目的判题状态和信息
         JudgeContext judgeContext = new JudgeContext();
+        judgeContext.setStatus(executeCodeResponse.getMessage());
         judgeContext.setJudgeInfo(executeCodeResponse.getJudgeInfo());
         judgeContext.setInputList(inputList);
         judgeContext.setOutputList(outputList);
@@ -98,7 +122,7 @@ public class JudgeServiceImpl implements JudgeService {
             }
             judgeInfoStrList.add(info.toString());
         }
-//        System.out.println("标志位"+flag);
+
         if(flag){
             question.setAcceptedNum(question.getAcceptedNum() + 1);
             questionFeignClient.updateQuestionById(question);
@@ -107,16 +131,13 @@ public class JudgeServiceImpl implements JudgeService {
         // 6）修改数据库中的判题结果
         questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
-        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
         // 将列表转换为由 \$ 分隔的字符串
         String judgeInfoString = String.join("\\$", judgeInfoStrList);
         questionSubmitUpdate.setJudgeInfo(judgeInfoString);
-//        System.out.println("判题记录"+questionSubmitUpdate);
         update = questionFeignClient.updateQuestionSubmitById(questionSubmitUpdate);
         if (!update) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
-        QuestionSubmit questionSubmitResult = questionFeignClient.getQuestionSubmitById(questionId);
-        return questionSubmitResult;
+        return questionFeignClient.getQuestionSubmitById(questionId);
     }
 }

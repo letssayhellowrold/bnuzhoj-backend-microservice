@@ -7,30 +7,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 判题信息消息枚举
+ * 文件上传业务类型枚举
  *
  * 
  * 
  */
-public enum JudgeInfoMessageEnum {
-
-    MEMORY_LIMIT_EXCEEDED("内存溢出", "Memory Limit Exceeded"),
-    TIME_LIMIT_EXCEEDED("超时", "Time Limit Exceeded"),
-    WRONG_ANSWER("答案错误", "Wrong Answer"),
-    PRESENTATION_ERROR("展示错误", "Presentation Error"),
-    OUTPUT_LIMIT_EXCEEDED("输出溢出", "Output Limit Exceeded"),
-    DANGEROUS_OPERATION("危险操作", "Dangerous Operation"),
-    RUNTIME_ERROR("运行错误", "Runtime Error"),
-    SYSTEM_ERROR("系统错误", "System Error"),
-    COMPILE_ERROR("编译错误", "Compile Error"),
-    ACCEPTED("答案正確", "Accepted"),
-    WAITING("等待中", "Waiting");
+public enum goJudgeStatusEnum {
+    ACCEPTED("正常结束","Accepted"),
+    Time_Limit_Exceeded("时间超限","Time Limit Exceeded"),
+    Memory_Limit_Exceeded("内存超限","Memory Limit Exceeded"),
+    Output_Limit_Exceeded("输出超限","Output Limit Exceeded"),
+    File_Error("文件错误","File Error"),
+    Nonzero_Exit_Status("非零返回","Nonzero Exit Status"),
+    Signalled("进程被信号终止","'Signalled'"),
+    InternalError("内部错误","Internal Error");
 
     private final String text;
 
     private final String value;
 
-    JudgeInfoMessageEnum(String text, String value) {
+    goJudgeStatusEnum(String text, String value) {
         this.text = text;
         this.value = value;
     }
@@ -50,11 +46,11 @@ public enum JudgeInfoMessageEnum {
      * @param value
      * @return
      */
-    public static JudgeInfoMessageEnum getEnumByValue(String value) {
+    public static goJudgeStatusEnum getEnumByValue(String value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
-        for (JudgeInfoMessageEnum anEnum : JudgeInfoMessageEnum.values()) {
+        for (goJudgeStatusEnum anEnum : goJudgeStatusEnum.values()) {
             if (anEnum.value.equals(value)) {
                 return anEnum;
             }

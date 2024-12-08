@@ -15,6 +15,8 @@ import java.util.List;
 @Data
 public class JudgeContext {
 
+    private String status;// 测评机返回状态
+
     private List<JudgeInfo> judgeInfo;
 
     private List<String> inputList;

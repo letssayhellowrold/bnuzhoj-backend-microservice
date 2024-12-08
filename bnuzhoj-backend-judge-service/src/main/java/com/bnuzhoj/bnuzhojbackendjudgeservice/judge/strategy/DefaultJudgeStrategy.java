@@ -15,12 +15,6 @@ import java.util.List;
  * 默认判题策略
  */
 public class DefaultJudgeStrategy implements JudgeStrategy {
-
-    /**
-     * 执行判题
-     * @param judgeContext
-     * @return
-     */
     @Override
     public List<JudgeInfo> doJudge(JudgeContext judgeContext) {
         List<JudgeInfo> judgeInfoList = judgeContext.getJudgeInfo();
