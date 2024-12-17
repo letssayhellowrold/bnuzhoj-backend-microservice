@@ -13,7 +13,3 @@ import com.bnuzhoj.bnuzhojbackendmodel.model.entity.User;
 public interface UserMapper extends BaseMapper<User> {
 
 }
-
-
-
-

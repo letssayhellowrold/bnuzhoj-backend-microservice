@@ -112,11 +112,13 @@ public class QuestionSubmitVO implements Serializable {
         String judgeInfo = questionSubmit.getJudgeInfo(); // 获取 questionSubmit 对象的 judgeInfo 字段
 
         List<String> judgeInfoStrList = Arrays.asList(judgeInfo.split("\\$"));
-        List<JudgeInfo> judgeInfoList = judgeInfoStrList.stream()
-                .map(judgeInfoStr -> JSONUtil.toBean(judgeInfoStr, JudgeInfo.class))
-                .collect(Collectors.toList());
-//        System.out.println(judgeInfoList);
-        questionSubmitVO.setJudgeInfo(judgeInfoList);
+        if(!judgeInfoStrList.isEmpty())
+        {
+            List<JudgeInfo> judgeInfoList = judgeInfoStrList.stream()
+                    .map(judgeInfoStr -> JSONUtil.toBean(judgeInfoStr, JudgeInfo.class))
+                    .collect(Collectors.toList());
+            questionSubmitVO.setJudgeInfo(judgeInfoList);
+        }
         return questionSubmitVO;
     }
 

@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import static com.bnuzhoj.bnuzhojbackenduserservice.service.impl.UserServiceImpl.SALT;
@@ -43,14 +42,13 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    private HttpServletRequest request;
 
     // region 登录相关
 
     /**
      * 用户注册
      *
-     * @param userRegisterRequest
-     * @return
      */
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -64,6 +62,7 @@ public class UserController {
         if (StringUtils.isAnyBlank(userName,userAccount, userPassword, checkPassword)) {
             return null;
         }
+
         long result = userService.userRegister(userName,userAccount, userPassword, checkPassword);
         return ResultUtils.success(result);
     }
@@ -71,9 +70,6 @@ public class UserController {
     /**
      * 用户登录
      *
-     * @param userLoginRequest
-     * @param request
-     * @return
      */
     @PostMapping("/login")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
@@ -93,8 +89,6 @@ public class UserController {
     /**
      * 用户注销
      *
-     * @param request
-     * @return
      */
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
@@ -108,8 +102,6 @@ public class UserController {
     /**
      * 获取当前登录用户
      *
-     * @param request
-     * @return
      */
     @GetMapping("/get/login")
     public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
@@ -124,13 +116,11 @@ public class UserController {
     /**
      * 创建用户
      *
-     * @param userAddRequest
-     * @param request
-     * @return
      */
     @PostMapping("/add")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
+        this.request = request;
         if (userAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -148,9 +138,6 @@ public class UserController {
     /**
      * 删除用户
      *
-     * @param deleteRequest
-     * @param request
-     * @return
      */
     @PostMapping("/delete")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)

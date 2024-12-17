@@ -14,8 +14,6 @@ public interface JudgeFeignClient {
 
     /**
      * 判题
-     * @param questionSubmitId
-     * @return
      */
     @PostMapping("/do")
     QuestionSubmit doJudge(@RequestParam("questionSubmitId") long questionSubmitId);

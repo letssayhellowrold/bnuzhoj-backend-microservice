@@ -25,8 +25,6 @@ public class UserInnerController implements UserFeignClient {
 
     /**
      * 根据 id 获取用户
-     * @param userId
-     * @return
      */
     @Override
     @GetMapping("/get/id")
@@ -36,8 +34,6 @@ public class UserInnerController implements UserFeignClient {
 
     /**
      * 根据 id 获取用户列表
-     * @param idList
-     * @return
      */
     @Override
     @GetMapping("/get/ids")
