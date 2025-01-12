@@ -19,8 +19,6 @@ public class JudgeManager {
     /**
      * 执行判题
      *
-     * @param judgeContext
-     * @return
      */
     List<JudgeInfo> doJudge(JudgeContext judgeContext) {
         QuestionSubmit questionSubmit = judgeContext.getQuestionSubmit();

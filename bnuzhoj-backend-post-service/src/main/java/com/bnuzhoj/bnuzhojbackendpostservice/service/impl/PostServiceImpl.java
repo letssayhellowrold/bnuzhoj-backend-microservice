@@ -71,12 +71,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         if (post == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        String title = post.getTitle();
+        String title = post.getTitle();// 可以不设置标题
         String content = post.getContent();
         String tags = post.getTags();
         // 创建时，参数不能为空
         if (add) {
-            ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(StringUtils.isAnyBlank(content, tags), ErrorCode.PARAMS_ERROR);
         }
         // 有参数则校验
         if (StringUtils.isNotBlank(title) && title.length() > 80) {
@@ -90,8 +90,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     /**
      * 获取查询包装类
      *
-     * @param postQueryRequest
-     * @return
      */
     @Override
     public QueryWrapper<Post> getQueryWrapper(PostQueryRequest postQueryRequest) {

@@ -7,7 +7,6 @@ import com.bnuzhoj.bnuzhojbackendmodel.model.dto.question.JudgeConfig;
 import com.bnuzhoj.bnuzhojbackendmodel.model.entity.Question;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.GoJudgeStatusEnum;
 import com.bnuzhoj.bnuzhojbackendmodel.model.enums.JudgeInfoMessageEnum;
-import com.bnuzhoj.bnuzhojbackendmodel.model.enums.QuestionSubmitStatusEnum;
 
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class DefaultJudgeStrategy implements JudgeStrategy {
     @Override
     public List<JudgeInfo> doJudge(JudgeContext judgeContext) {
         List<JudgeInfo> judgeInfoList = judgeContext.getJudgeInfo();
-        List<String> inputList = judgeContext.getInputList();
+//        List<String> inputList = judgeContext.getInputList();
         List<String> outputList = judgeContext.getOutputList();
         Question question = judgeContext.getQuestion();
         List<JudgeCase> judgeCaseList = judgeContext.getJudgeCaseList();
@@ -43,14 +42,18 @@ public class DefaultJudgeStrategy implements JudgeStrategy {
             if(!judgeInfoItem.getMessage().equals(GoJudgeStatusEnum.ACCEPTED.getValue()))
             {
                 resultItem.setMessage(judgeInfoItem.getMessage());
+                if(resultItem.getMessage().equals(GoJudgeStatusEnum.Signalled.getValue()))
+                {
+                    resultItem.setMessage(JudgeInfoMessageEnum.RUNTIME_ERROR.getValue());// 将表述修改为更通用的RE
+                }
             }
             else{
                 // 正常退出说明有输出，先检查运行消耗是否符合题目限制，再看答案是否正确
                 String judgeConfigStr = question.getJudgeConfig();
                 JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
-                Long limitMemory = judgeConfig.getMemoryLimit() * 1024L; // 转换为字节
-                Long limitTime = judgeConfig.getTimeLimit() * 1000000L; // 转换为微秒
-                Long limitStack = judgeConfig.getStackLimit() * 1024L;
+                long limitMemory = judgeConfig.getMemoryLimit() * 1024L; // 转换为字节
+                long limitTime = judgeConfig.getTimeLimit() * 1000000L; // 转换为微秒
+//                Long limitStack = judgeConfig.getStackLimit() * 1024L;
 
 
 

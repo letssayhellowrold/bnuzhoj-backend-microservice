@@ -54,6 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userAccount.length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
         }
+
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
         }
@@ -76,9 +77,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
             user.setUserName(userName);
-            boolean saveResult = this.save(user);
-            if (!saveResult) {
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
+            // 4. 写入数据库并进行异常检测
+            try {
+                boolean rowsAffected = this.save(user);
+                if (!rowsAffected) {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
+                }
+            } catch (Exception e) {
+                // 记录异常信息
+                log.error("注册失败，数据库操作异常", e);
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库操作异常");
             }
             return user.getId();
         }
@@ -116,8 +124,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 获取当前登录用户
      *
-     * @param request
-     * @return
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {
@@ -139,8 +145,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 获取当前登录用户（允许未登录）
      *
-     * @param request
-     * @return
      */
     @Override
     public User getLoginUserPermitNull(HttpServletRequest request) {
@@ -158,8 +162,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 是否为管理员
      *
-     * @param request
-     * @return
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
@@ -177,7 +179,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 用户注销
      *
-     * @param request
      */
     @Override
     public boolean userLogout(HttpServletRequest request) {

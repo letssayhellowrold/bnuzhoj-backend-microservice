@@ -28,7 +28,7 @@ public class goJudgeCodeSandbox implements CodeSandbox {
 
 
     // 远程沙箱接口的根URL
-    private static final String REMOTE_SANDBOX_URL = "http://119.29.172.40:5555";
+    private static final String REMOTE_SANDBOX_URL = "http://120.79.55.4:5050";
 
     private  String runnableFileId;
 

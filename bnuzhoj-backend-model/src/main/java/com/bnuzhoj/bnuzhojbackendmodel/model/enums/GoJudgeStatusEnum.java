@@ -1,5 +1,6 @@
 package com.bnuzhoj.bnuzhojbackendmodel.model.enums;
 
+import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
  * 
  * 
  */
+@Getter
 public enum GoJudgeStatusEnum {
     ACCEPTED("正常结束","Accepted"),
     Time_Limit_Exceeded("时间超限","Time Limit Exceeded"),
@@ -19,7 +21,7 @@ public enum GoJudgeStatusEnum {
     Output_Limit_Exceeded("输出超限","Output Limit Exceeded"),
     File_Error("文件错误","File Error"),
     Nonzero_Exit_Status("非零返回","Nonzero Exit Status"),
-    Signalled("进程被信号终止","'Signalled'"),
+    Signalled("进程被信号终止","Signalled"),
     InternalError("内部错误","Internal Error");
 
     private final String text;
@@ -34,7 +36,6 @@ public enum GoJudgeStatusEnum {
     /**
      * 获取值列表
      *
-     * @return
      */
     public static List<String> getValues() {
         return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
@@ -43,8 +44,6 @@ public enum GoJudgeStatusEnum {
     /**
      * 根据 value 获取枚举
      *
-     * @param value
-     * @return
      */
     public static GoJudgeStatusEnum getEnumByValue(String value) {
         if (ObjectUtils.isEmpty(value)) {
@@ -58,11 +57,4 @@ public enum GoJudgeStatusEnum {
         return null;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public String getText() {
-        return text;
-    }
 }

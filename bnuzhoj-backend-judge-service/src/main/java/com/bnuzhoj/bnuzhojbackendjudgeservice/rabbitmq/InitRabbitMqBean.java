@@ -24,8 +24,10 @@ public class InitRabbitMqBean {
         try {
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
-            Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
+            Channel channel;
+            try (Connection connection = factory.newConnection()) {
+                channel = connection.createChannel();
+            }
             String EXCHANGE_NAME = "code_exchange";
             channel.exchangeDeclare(EXCHANGE_NAME, "direct");
 
